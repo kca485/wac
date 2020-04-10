@@ -1,0 +1,100 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The reverse() method reverses an array in place.
+The first array element becomes the last, and the last array element becomes the first.
+*/
+
+/* FUNCTION SIGNATURE
+reverse(arr)
+*/
+
+/* RETURN VALUE
+The reversed array
+*/
+
+function reverse(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array.');
+  }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  var arrayMid = arr.length / 2;
+  for (var i = 0; i < arrayMid; i++) {
+    var lastIndex = arr.length - 1;
+
+    if (i in arr) {
+      var temporaryStorage = arr[i];
+
+      // if i exists and (lastIndex - i) exists
+      if ((lastIndex - i) in arr) {
+        arr[i] = arr[lastIndex - i];
+
+      // if i exists and (lastIndex - i) doesn't
+      } else {
+        delete arr[i];
+      }
+
+      arr[lastIndex - i] = temporaryStorage;
+
+      // if i doesn't exist and (lastIndex - i) exists
+    } else if ((lastIndex - i) in arr) {
+      arr[i] = arr[lastIndex - i];
+      delete arr[lastIndex - i];
+    }
+      // if both i and (lastIndex - i) don't exist, do nothing
+  }
+
+  return arr;
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      reverse(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should reverse the order of elements in the array': function() {
+    var arr = ['a', 'b', 'c'];
+    reverse(arr);
+
+    eq(arr[0], 'c');
+    eq(arr[1], 'b');
+    eq(arr[2], 'a');
+  },
+  'it should return the reversed array, not creating a new one': function() {
+    var arr = [1,2];
+    var reverseReturnValue = reverse(arr);
+
+    eq(reverseReturnValue, arr);
+  },
+  'it should be able to be called or applied to other object': function() {
+    var obj = {0: 'a', 1: 'b', length: 2};
+    reverse.call(obj, []);
+
+    eq(obj[0], 'b');
+    eq(obj[1], 'a');
+  },
+  'it should retain the length and number of existing properties': function() {
+    var obj = {0: 'a', length: 2};
+    reverse.call(obj, []);
+
+    eq(0 in obj, false);
+    eq(obj[1], 'a');
+    eq(obj.length, 2);
+  }
+
+});
+
+</script>
+

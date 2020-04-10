@@ -1,0 +1,110 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The some() method tests whether at least one element in the array passes the test implemented by the provided function.
+It returns a Boolean value. 
+*/
+
+function some(array, callback, optionalThis) {
+  var someCallback = callback.bind(optionalThis);
+  var originalArrayLength = array.length;
+  for (var i = 0; i < originalArrayLength; i++) {
+    if (i in array) {
+      if (someCallback(array[i], i, array)) {
+        return true;;
+      }
+    }
+  }
+  return false;
+}
+
+tests({
+
+  'it should executes callback for each element in the array until callback returns a truthy value': function() {
+    var numberCallbackHasRun = 0;
+    some([1, 2, 3, 4], function() {
+      numberCallbackHasRun++;
+      return numberCallbackHasRun > 2;
+    });
+    eq(numberCallbackHasRun, 3);
+  },
+  'it should only invoke callback for array indexes which have assigned values.': function() {
+    var numberCallbackHasRun = 0;
+    some([1, , 3], function() {
+      numberCallbackHasRun++;
+    });
+    eq(numberCallbackHasRun, 2);
+  },
+
+  'it should pass in the ith element in the array as the first argument to the callback': function() {
+    some([1], function(element) {
+      eq(element, 1);
+    });
+  },
+  'it should pass in the index as the second argument to the callback': function() {
+    some([1], function(element, index) {
+      eq(index, 0);
+    });
+  },
+  'it should pass in the array that was processed by some() as the third argument to the callback': function() {
+    var originalArray = [1, 2, 3];
+    some(originalArray, function(element, index, passedInArray) {
+      eq(passedInArray, originalArray);
+    });
+  },
+  'it should accept an optional this object': function() {
+    some([1], function() {
+      eq(this.check, 'could be accessed inside the callback');
+    }, {check: 'could be accessed inside the callback'});
+  },
+
+  'it should return true if the callback function returns a truthy value': function() {
+    var someReturnValue = some([1, 2, 0], function(element) {
+      return element > 1;
+    });
+    eq(someReturnValue, true);
+  },
+  'it should return false if callback never returns a truthy value': function() {
+    var someReturnValue = some([1, 2, 3], function(element) {
+      return element < 0;
+    });
+    eq(someReturnValue, false);
+  },
+  'it should return false for an empty array': function() {
+    var someReturnValue = some([], function() {
+      return true;
+    });
+    eq(someReturnValue, false);
+  },
+
+  'it should not process the elements appended to the array after some() begins': function() {
+    var originalArray = [1, 2];
+    var numberCallbackHasRun = 0;
+    some(originalArray, function() {
+      originalArray.push(3);
+      numberCallbackHasRun++;
+    })
+    eq(numberCallbackHasRun, 2);
+  },
+  'it should pass the value at the time some() visits the element\'s index': function() {
+    var originalArray = ['a', 'b'];
+    some(originalArray, function(element, index) {
+      originalArray[1] = 'changed value';
+      originalArray[index] = element + ' was visited';
+    });
+    eq(originalArray[1], 'changed value was visited');
+  },
+  'it should not visit elements that are deleted after some() begins': function() {
+    var originalArray = [1, 2, 3, 4];
+    var numberCallbackHasRun = 0;
+    some(originalArray, function() {
+      originalArray.pop();
+      numberCallbackHasRun++;
+    });
+    eq(numberCallbackHasRun, 2);
+  }
+
+});
+
+</script>

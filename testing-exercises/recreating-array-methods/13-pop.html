@@ -1,0 +1,114 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The pop() method removes the last element from an array and returns that element.
+This method changes the length of the array.
+*/
+
+/* FUNCTION SIGNATURE
+pop(arr);
+*/
+
+/* RETURN VALUE
+The removed element from the array; undefined if the array is empty.
+*/
+
+function pop(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array');
+  }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  arr.length = parseInt(arr.length);
+  if (!arr.length) {
+    arr.length = 0;
+  }
+
+  if (arr.length === 0) {
+    return undefined;
+  }
+
+  var targetIndex = arr.length - 1;
+
+  var indexObjectProperty = Object.getOwnPropertyDescriptor(arr, targetIndex);
+  var objectType = Object.prototype.toString.call(arr);
+  if (!indexObjectProperty.writable) {
+    throw new TypeError('Cannot delete property \'' + indexObjectProperty.value + '\' of ' + objectType );
+  }
+
+  var targetElement = arr[targetIndex];
+  delete arr[targetIndex];
+  arr.length--;
+
+  return targetElement;
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      pop(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should remove the last element from the array': function() {
+    var arr = ['a', 'b'];
+    pop(arr);
+
+    eq(arr[1], undefined);
+    eq(arr.length, 1);
+  },
+  'it should return the element it removed': function() {
+    var popReturnValue = pop(['a', 'b']);
+
+    eq(popReturnValue, 'b');
+  },
+  'it should return undefined if array is empty': function() {
+    var popReturnValue = pop([]);
+
+    eq(popReturnValue, undefined);
+  },
+  'it should be able to be called or applied to objects resembling arrays': function() {
+    var obj = {0: 'a', 1: 'b', length: 2}
+    pop.call(obj, []);
+
+    eq(obj[1], undefined);
+    eq(obj.length, 1);
+  },
+  'if the length property is not a number, length will be 0': function() {
+    var obj = {length: 'length value is not a number'};
+    pop.call(obj, []);
+
+    eq(obj.length, 0);
+  },
+  'if the length property is nonexistent, length will be 0': function() {
+    var obj = {};
+    pop.call(obj, []);
+
+    eq(obj.length, 0);
+  },
+  'it should throw TypeError, if it tries to delete a read-only property': function() {
+    var stringObject = 'an immutable object';
+    var isTypeErrorThrown = false;
+    try {
+      pop.call(stringObject, []);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  }
+
+});
+
+</script>
+
+

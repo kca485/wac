@@ -1,0 +1,122 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The push() method adds one or more elements to the end of an array and returns the new length of the array.
+*/
+
+/* FUNCTION SIGNATURE
+push(arr, element1[, ...[, elementN]])
+*/
+
+/* PARAMETERS
+elementN
+  The element(s) to add to the end of the array
+*/
+
+/* RETURN VALUE
+The new length property of the object upon which the method was called.
+*/
+
+function push(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array.');
+  }
+
+  // we want push() could be tricked by .call() or .apply()
+  // so that there's a way it could be done for object
+  if (this !== window) {
+    arr = this;
+
+    arr.length = parseInt(arr.length);
+    if (!arr.length) {
+      arr.length = 0;
+    }
+  }
+
+  // but throw error for object with read-only length property
+  var objectLength = Object.getOwnPropertyDescriptor(arr, 'length');
+  var objectType = Object.prototype.toString.call(arr);
+  if (!objectLength.writable) { 
+    throw new TypeError('Cannot assign to read only property \'length\' of object ' + objectType);
+  }
+
+  for (var i = 1; i < arguments.length; i++) {
+    var previousLength = arr.length;
+
+    arr[arr.length] = arguments[i];
+
+    if (arr.length === previousLength) {
+      arr.length++;
+    }
+  }
+
+  return arr.length;
+}
+
+tests({
+
+  'it should throw a TypeError if the first argument is not an array.': function() {
+    var isTypeErrorThrown = false;
+    try {
+      push(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should append elementN to the end of the array.': function() {
+    var arr = [1,2];
+    push(arr, 'appended');
+
+    eq(arr[2], 'appended');
+  },
+  'it should return the new length of the array.': function() {
+    var arr = ['a', 'b'];
+    var pushReturnValue = push(arr, 'c');
+
+    eq(pushReturnValue, 3);
+  },
+  'it should be able to accept multiple elementN': function() {
+    var arr = [];
+    push(arr, 1, 2);
+
+    eq(arr[0], 1);
+    eq(arr[1], 2);
+  },
+  'it should be able to be used with call() or apply() on objects resembling arrays': function() {
+    var obj = {length: 0}
+    push.call(obj, [], 'a');
+
+    eq(obj.length, 1);
+    eq(obj[0], 'a');
+  },
+  'If the length property cannot be converted into a number, the index used is 0': function() {
+    var obj = {length: 'a'};
+    push.call(obj, [], 100);
+
+    eq(obj[0], 100);
+  },
+  'if the length is nonexistent, length will be created.': function() {
+    var obj = {};
+    push.call(obj, [], 'a');
+
+    eq(obj.length, 1);
+  },
+  'it should throw TypeError for object with read-only length property.': function() {
+    var s = 'a string';
+    var isTypeErrorThrown = false;
+    try {
+      push.call(s, [], 'try to append');
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  }
+
+});
+
+</script>
+

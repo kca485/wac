@@ -1,0 +1,273 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The splice() method changes the contents of an array by removing or replacing existing elements and/or adding new elements in place.
+*/
+
+/* FUNCTION SIGNATURE
+splice(array, startIndex[, deleteCount[, item1[, item2[, ...]]]])
+*/
+
+/* PARAMETERS
+startIndex
+  - The index at which to start changing the array.
+
+  - If greater than the length of the array, start will be set to the length of the array.
+  In this case, no element will be deleted but the method will behave as an adding function, adding as many element as item[n*] provided.
+
+  - If negative, it will begin that many elements from the end of the array.
+  (In this case, the origin -1, meaning -n is the index of the nth last element, and is therefore equivalent to the index of array.length - n.)
+
+  - If array.length + start is less than 0, it will begin from index 0.
+
+deleteCount | Optional
+  - An integer indicating the number of elements in the array to remove from start.
+
+  - If deleteCount is omitted, or if its value is equal to or larger than array.length - start
+  (that is, if it is equal to or greater than the number of elements left in the array, starting at start),
+  then all the elements from start to the end of the array will be deleted.
+
+  - If deleteCount is 0 or negative, no elements are removed. In this case, you should specify at least one new element (see below).
+
+item1, item2, ... | Optional
+  The elements to add to the array, beginning from start. If you do not specify any elements, splice() will only remove elements from the array.
+*/
+
+/* RETURN VALUE
+An array containing the deleted elements.
+If only one element is removed, an array of one element is returned.
+If no elements are removed, an empty array is returned.
+*/
+
+function splice(arr, startIndex, deleteCount) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array');
+  }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  if (startIndex < 0) {
+    var actualStartIndex = arr.length + startIndex;
+    if (actualStartIndex < 0) {
+      actualStartIndex = 0;
+    }
+  } else {
+    var actualStartIndex = startIndex;
+    if (actualStartIndex > arr.length) {
+      actualStartIndex = arr.length;
+    }
+  }
+
+  deleteCount = parseInt(deleteCount);
+  if ((deleteCount < 0) || Number.isNaN(deleteCount)) {
+      deleteCount = 0;
+    }
+  if ((arguments.length > 2) && ((startIndex + deleteCount) < arr.length)) {
+    var lastDeletedIndex = actualStartIndex + deleteCount -1;
+    var finalLengthDifference = -deleteCount;
+  } else { // if no deleteCount or (StartIndex + deleteCount) >= arr.length
+    var lastDeletedIndex = arr.length - 1;
+    var finalLengthDifference = actualStartIndex - arr.length;
+  } // note: the calculation is such that in the case of ((startIndex + deleteCount) === arr.length),
+    //       it doesn't matter whether thatt case falls into either the 'if' or 'else'.
+    //       this note probably helps for the 7th and/or 8th test.
+
+  if (arguments.length > 3) {
+    finalLengthDifference = finalLengthDifference + (arguments.length - 3);
+  }
+
+  // first, delete elements but store the deleted elements
+  var returnArray = [];
+  for (var i = actualStartIndex; i <= lastDeletedIndex; i++) {
+    returnArray.push(arr[i]);
+    delete arr[i];
+  }
+
+  // then, shift the tail part of the array according to finalLengthDifference
+  var totalShiftingElements = arr.length - lastDeletedIndex - 1;
+  if (finalLengthDifference < 0) { // if finalLengthDifferent is negative, swap from the front
+
+    var startSwappingIndex = lastDeletedIndex + finalLengthDifference + 1;
+    for (var i = startSwappingIndex; i < (startSwappingIndex + totalShiftingElements); i++) {
+      swapThese(i, (i - finalLengthDifference), arr);
+    }
+    arr.length = arr.length + finalLengthDifference; // safe to recalculate arr.length after deletion
+
+  } else if (finalLengthDifference > 0) { // if finalLengthDifferent is positive, swap from the back
+
+    var startSwappingIndex = arr.length;
+    arr.length = arr.length + finalLengthDifference; // recalculate arr.length first to make room at the end of array
+    for (var i = startSwappingIndex; i > (startSwappingIndex - totalShiftingElements); i--) {
+      swapThese(i, (i - finalLengthDifference), arr);
+    }
+  }
+
+  // then, insert the given itemN
+  if (arguments.length > 3) {
+    var totalInsertedItem = arguments.length - 3;
+    var itemNIndex = 3;
+    for (var i = actualStartIndex; i < (actualStartIndex + totalInsertedItem); i++) {
+      arr[i] = arguments[itemNIndex];
+      itemNIndex++;
+    }
+  }
+
+  return returnArray;
+}
+
+function swapThese(indexX, indexY, array) {
+  if (indexX in array) {
+    var mediatorVar = array[indexX];
+
+    // indexX exist and indexY exist
+    if (indexY in array) {
+      array[indexX] = array[indexY];
+
+    // indexX exist and indexY doesn't exist
+    } else {
+      delete array[indexX];
+    }
+
+    array[indexY] = mediatorVar;
+
+    // indexX doesn't exist and indexY exist
+  } else if (indexY in array) {
+    array[indexX] = array[indexY];
+    delete array[indexY];
+  }
+
+    // if no indexX nor indexY, do nothing
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      splice(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+
+  'it should start deleting elements at startIndex': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, 1);
+
+    eq(arr[0], 'a');
+    eq(arr.length, 1);
+  },
+  'it should removed deleteCount number of elements if provided': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, 1, 1);
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'c');
+    eq(arr.length, 2);
+  },
+  'it should start adding itemN from startIndex if provided': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, 1, 1, 'item', 'another item');
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'item');
+    eq(arr[2], 'another item');
+    eq(arr[3], 'c');
+    eq(arr.length, 4);
+  },
+
+  'if startIndex is negative, the changes will start at arr.length + startIndex': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, -2, 1, 'item', 'another item');
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'item');
+    eq(arr[2], 'another item');
+    eq(arr[3], 'c');
+    eq(arr.length, 4);
+  },
+  'if arr.length + startIndex is negative, the changes will start at index 0': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, -5, 1, 'item', 'another item');
+
+    eq(arr[0], 'item');
+    eq(arr[1], 'another item');
+    eq(arr[2], 'b');
+    eq(arr[3], 'c');
+    eq(arr.length, 4);
+  },
+  'if startIndex > arr.length, startIndex will be set to arr.length': function() {
+    var arr = ['a'];
+    splice(arr, 5, 5, 'b');
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'b');
+    eq(arr.length, 2);
+  },
+
+  'if deleteCount is equal to or larger than arr.length - startIndex, it shoulde delete elements from startIndex to the end of array': function() {
+    var arr = ['a', 'b', 'c', 'd'];
+    splice(arr, 1, 5  );
+
+    eq(arr[0], 'a');
+
+    eq(arr.length, 1);
+  },
+  'if deleteCount is 0, no elements are removed': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, 1, 0, 'item');
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'item');
+    eq(arr[2], 'b');
+    eq(arr[3], 'c');
+    eq(arr.length, 4);
+  },
+  'if deleteCount is negative, no elements are removed': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, 1, -2, 'item');
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'item');
+    eq(arr[2], 'b');
+    eq(arr[3], 'c');
+    eq(arr.length, 4);
+  },
+  'if deleteCount could not be converted to integer, no elements are removed': function() {
+    var arr = ['a', 'b', 'c'];
+    splice(arr, 1, 'this deleteCount could not be converted to integer', 'item');
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'item');
+    eq(arr[2], 'b');
+    eq(arr[3], 'c');
+    eq(arr.length, 4);
+  },
+
+  'it should return an array containing the deleted elements': function() {
+    var arr = ['a', 'b', ,'c'];
+    var spliceReturnValue = splice(arr, 1, 2, 'item');
+
+    eq(spliceReturnValue[0], 'b');
+    eq(spliceReturnValue[1], undefined);
+    eq(spliceReturnValue.length, 2);
+  },
+
+  'it should be able to be called or applied to other objects': function() {
+    var obj = {0: 'a', 1: 'b', 2: 'c', length: 3};
+    var spliceReturnValue = splice.call(obj, [], 1, 1, 'item', 'another item');
+
+    eq(obj[0], 'a');
+    eq(obj[1], 'item');
+    eq(obj[2], 'another item');
+    eq(obj.length, 4);
+  }
+});
+
+</script>
+

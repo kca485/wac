@@ -1,0 +1,146 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The shift() method removes the first element from an array and returns that removed element.
+This method changes the length of the array.
+*/
+
+/* FUNCTION SIGNATURE
+shift(arr)
+*/
+
+/* RETURN VALUE
+The removed element from the array; undefined if the array is empty.
+*/
+
+function shift(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array.');
+  }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  arr.length = parseInt(arr.length);
+  if (!arr.length || arr.length < 0) {
+    arr.length = 0;
+  }
+
+  if (arr.length === 0) {
+    return undefined;
+  }
+
+  var targetIndex = 0;
+  var objectProperty = Object.getOwnPropertyDescriptor(arr, targetIndex);
+  var objectType = Object.prototype.toString.call(arr);
+  if (objectProperty && !objectProperty.writable) {
+    throw new TypeError('Cannot assign to read only property \'' + targetIndex + '\' of object ' + objectType);
+  }
+
+  var targetElement = arr[targetIndex];
+  arr[targetIndex] = undefined
+  for (var i = 1; i < arr.length; i++) {
+    arr[i -1] = arr[i];
+  }
+  arr.length--;
+
+  return targetElement;
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      shift(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should remove element at the 0th index': function() {
+    var arr = ['a'];
+    shift(arr);
+
+    eq(arr[0], undefined);
+    eq(arr.length, 0);
+  },
+  'it should shift the values at the consecutive indexes down': function() {
+    var arr = ['a', 'b', 'c'];
+    shift(arr);
+
+    eq(arr[0], 'b');
+    eq(arr[1], 'c');
+    eq(arr.length, 2);
+  },
+  'it should return the removed value': function() {
+    var shiftReturnValue = shift(['a']);
+
+    eq(shiftReturnValue, 'a');
+  },
+  'it should return undefined if the length property is 0': function() {
+    var shiftReturnValue = shift([]);
+
+    eq(shiftReturnValue, undefined);
+  },
+  'it should be able to be called or applied to objects resembling arrays': function() {
+    var arrayLikeObject = {0: 'a', length: 1};
+    var shiftReturnValue = shift.call(arrayLikeObject, []);
+
+    eq(arrayLikeObject[0], undefined);
+    eq(arrayLikeObject.length, 0);
+    eq(shiftReturnValue, 'a');
+  },
+  'if the length property is nonexistent, length will be created with value 0': function() {
+    var obj = {0: 'a', 1: 'b'};
+    shift.call(obj, []);
+
+    eq(obj.length, 0);
+  },
+  'if the length property is not a number, it should try to convert length to number': function() {
+    var obj = {length: '4'};
+    shift.call(obj, []);
+
+    eq(obj.length, 3);
+  },
+  'if non-number length property could not be converted, length will be 0': function() {
+    var obj = {0: 'a', 1: 'b', length: 'not a number'};
+    shift.call(obj, []);
+
+    eq(obj.length, 0);
+  },
+  'if length is negative, length will be converted to 0': function() {
+    var obj = {length: -5};
+    shift.call(obj, []);
+
+    eq(obj.length, 0);
+  },
+  'it should throw TypeError, if it tries to delete a read-only property': function() {
+    var stringObject = 'each string character is read-only';
+    var isTypeErrorThrown = false;
+    try {
+      shift.call(stringObject, []);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should remove the value of the first element before it shift (length-1) number of elements': function() {
+    var obj = {0: 'a', 1: 'b', length: 1};
+    shift.call(obj, []);
+
+    eq(obj[0], undefined);
+    eq(obj[1], 'b');
+    eq(obj.length, 0);
+  }
+
+});
+
+</script>
+
+
+

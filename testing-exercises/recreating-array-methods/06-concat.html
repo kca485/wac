@@ -1,0 +1,102 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The concat() method is used to merge two or more arrays.
+This method does not change the existing arrays, but instead returns a new array.
+*/
+
+/* FUNCTION SIGNATURE
+concat(array[, value1[, value2[, ...[, valueN]]]])
+*/
+
+/* PARAMETERS
+valueN | Optional
+  Arrays and/or values to concatenate into a new array.
+*/
+
+/* RETURN VALUE
+A new array instance.
+*/
+
+function concat() {
+  if (!Array.isArray(arguments[0])) {
+    throw new TypeError(arguments[0] + ' is not an array');
+  }
+
+  var newArray = [];
+
+  for (var j = 0; j < arguments.length; j++) {
+    if (Array.isArray(arguments[j])) {
+      for (var i = 0; i < arguments[j].length; i++) {
+        newArray.push(arguments[j][i]);
+      }
+    } else {
+      newArray.push(arguments[j]);
+    }
+  }
+
+  return newArray;
+}
+
+
+tests({
+
+  'it should passed in an array as the first argument': function() {
+    var throwTypeError = false;
+    try {
+      concat(1);
+    } catch (error) {
+      throwTypeError = error instanceof TypeError;
+    }
+    eq(throwTypeError, true);
+  },
+  'it should create and return a new array': function() {
+    var originalArray = [];
+    var concatReturnValue = concat(originalArray);
+    eq(Array.isArray(concatReturnValue), true);
+    eq(concatReturnValue !== originalArray, true);
+  },
+
+  'for each element of an array argument, if that element is not an object, concat() should push the value to the new array': function() {
+    var returnedArray = concat([1, 2]);
+    eq(returnedArray[0], 1);
+    eq(returnedArray[1], 2);
+  },
+  'for each element of an array argument, if that element is an object, concat() should push the object reference to the new array': function() {
+    var arrayOfObject = [{}]
+    var returnedArray = concat(arrayOfObject);
+    eq(returnedArray[0], arrayOfObject[0]);
+  },
+
+  'if the next valueN argument is an array, it should add the elements of that argument to the new array': function() {
+    var returnedArray = concat([1, 2], [3, 4]);
+    eq(returnedArray[3], 4);
+  },
+  'if the next valueN argument is not an array, it should add that argument to the new array': function() {
+    var returnedArray = concat([1], 'string argument', {goal: 'should have the object reference'});
+    eq(returnedArray[1], 'string argument');
+    eq(returnedArray[2].goal, 'should have the object reference');
+  },
+
+  'it should not alter any of the arrays provided as arguments': function() {
+    var baseArray = [1];
+    var referenceCheckerArray = baseArray;
+    var valueCheckerArray = [1];
+    concat(referenceCheckerArray, valueCheckerArray);
+    eq(referenceCheckerArray, baseArray);
+    eq(valueCheckerArray[0], baseArray[0]);
+  },
+  'it should not alter this': function() {
+    var object = {
+      returnThis: function() {
+        return this;
+      }
+    }
+    var returnedArray = concat([], object.returnThis());
+    eq(returnedArray[0], object);
+  }
+
+});
+
+</script>

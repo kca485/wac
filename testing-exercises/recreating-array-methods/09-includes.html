@@ -1,0 +1,108 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The includes() method determines whether an array includes a certain value among its entries,
+returning true or false as appropriate.
+*/
+
+/* FUNCTION SIGNATURE
+includes(arr, valueToFind[, fromIndex])
+*/
+
+/* PARAMETERS
+valueToFind
+  The value to search for.
+
+fromIndex | Optional
+  The position in this array at which to begin searching for valueToFind.
+  The first character to be searched is found at fromIndex for positive values of fromIndex,
+  or at arr.length + fromIndex for negative values of fromIndex
+  (using the absolute value of fromIndex as the number of characters from the end of the array at which to start the search).
+  Defaults to 0.
+*/
+
+/* RETURN VALUE
+Boolean which is true if the value valueToFind is found within the array
+(or the part of the array indicated by the index fromIndex, if specified).
+
+Values of zero are all considered to be equal, regardless of sign.
+(That is, -0 is considered to be equal to both 0 and +0), but false is not considered to be the same as 0.
+*/
+
+function includes(arr, valueToFind, fromIndex) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array.');
+  }
+
+  var traversingIndex = 0;
+
+  fromIndex = parseInt(fromIndex);
+
+  if (fromIndex) {
+    traversingIndex = fromIndex;
+    if (fromIndex < 0 ) {
+      traversingIndex = arr.length + fromIndex;
+    }
+    if (fromIndex >= arr.length) {
+      return false;
+    }
+  }
+
+  for (traversingIndex; traversingIndex < arr.length; traversingIndex++) {
+    if (arr[traversingIndex] === valueToFind) {
+      return true;
+    }
+  }
+  return false;
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      includes({});
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+    eq(isTypeErrorThrown, true);
+  },
+  'it should return true if valueToFind is found within the array': function() {
+    var includesReturnValue = includes(['a'], 'a');
+    eq(includesReturnValue, true);
+  },
+  'it should return false if valueToFind is not found within the array': function() {
+    var includesReturnValue = includes(['a'], 'b');
+    eq(includesReturnValue, false);
+  },
+
+  'if fromIndex is positive, it should start searching from array[fromIndex]': function() {
+    var includesReturnValue = includes(['a', 'b'], 'a', 1);
+    eq(includesReturnValue, false);
+  },
+  'if fromIndex is negative, it should start searching from array[array.length - fromIndex]': function() {
+    var includesReturnValue = includes(['a', 'b'], 'a', -1);
+    eq(includesReturnValue, false);
+  },
+  'if fromIndex is greater than or equal to array.length, it should return false': function() {
+    var includesReturnValue = includes(['a'], 'a', 2);
+    eq(includesReturnValue, false);
+  },
+  'if fromIndex couldn\'t be parsed as integer, it should start searching at array[0]': function() {
+    var includesReturnValue = includes(['a'], 'a', 2);
+    eq(includesReturnValue, false);
+  },
+
+  'comparison of the values should be case-sensitive': function() {
+    var includesReturnValue = includes(['a'], 'A');
+    eq(includesReturnValue, false);
+  },
+  '0 and -0 should be considered the same value': function() {
+    var includesReturnValue = includes([-0], 0);
+    eq(includesReturnValue, true);
+  }
+
+});
+
+</script>

@@ -1,0 +1,142 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The fill() method changes all elements in an array to a static value,
+from a start index (default 0) to an end index (default array.length).
+It returns the modified array.
+*/
+
+/* FUNCTION SIGNATURE
+fill(arr, value[, start[, end]])
+*/
+
+/* PARAMETERS
+value
+  Value to fill the array with. (Note all elements in the array will be this exact value.)
+startIndex | Optional
+  Start index, default 0.
+endIndex | Optional
+  End index, default arr.length.
+*/
+
+/* RETURN VALUE
+The modified array, filled with value.
+*/
+
+function fill(arr, value, startIndex, endIndex) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array.');
+  }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  var startPosition = 0;
+  if (startIndex) {
+    startPosition = startIndex;
+
+    if (startIndex < 0) {
+      startPosition = startIndex + arr.length;
+    }
+  }
+
+  if (endIndex === undefined) {
+    endPosition = arr.length;
+  } else {
+    endPosition = endIndex;
+
+    if (endIndex < 0) {
+      endPosition = endIndex + arr.length;
+    }
+  }
+
+  for (var i = startPosition; i < endPosition; i++) {
+    arr[i] = value;
+  }
+
+  return arr;
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      fill(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should change the elements in the array to the given value': function() {
+    var arr = ['a', 'b'];
+    fill(arr, 'c');
+
+    eq(arr[0], 'c');
+    eq(arr[1], 'c');
+  },
+  'it should return the modified array, not creating a new one': function() {
+    var arr = ['a', 'b'];
+    var fillReturnValue = fill(arr);
+
+    eq(fillReturnValue, arr);
+  },
+  'if startIndex, it should begin the changes from array[startIndex]': function() {
+    var arr = ['a', 'b'];
+    fill(arr, 'c', 1);
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'c');
+  },
+  'if endIndex, it should stop the changes at array[endIndex], excluding array[endIndex]': function() {
+    var arr = ['a', 'b'];
+    fill(arr, 'c', 0, 1);
+
+    eq(arr[0], 'c');
+    eq(arr[1], 'b');
+  },
+  'if startIndex is negative, it is treated as array.length + startIndex': function() {
+    var arr = ['a', 'b', 'c'];
+    fill(arr, 'd', -1);
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'b');
+    eq(arr[2], 'd');
+  },
+  'if endIndex is negative, it is treated as array.length + endIndex': function() {
+    var arr = ['a', 'b', 'c'];
+    fill(arr, 'd', 0, -1);
+
+    eq(arr[0], 'd');
+    eq(arr[1], 'd');
+    eq(arr[2], 'c');
+  },
+  'it should be able to be called or applied to other object': function() {
+    var obj = {length: 1};
+    fill.call(obj, [], 'c');
+
+    eq(obj[0], 'c');
+  },
+  'if the given value is an object, the elements should be change to that object reference': function() {
+    var arr = ['a', 'b'];
+    var obj = {check: 'should have the object reference'};
+    fill(arr, obj);
+
+    eq(arr[0].check, 'should have the object reference');
+    eq(arr[1].check, 'should have the object reference');
+  },
+  'if endIndex is not a number and could not be converted to number, it should not do any changes': function() {
+    var arr = ['a', 'b', 'c'];
+    fill(arr, 'z', 0, {});
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'b');
+    eq(arr[2], 'c');
+  },
+
+});
+
+</script>

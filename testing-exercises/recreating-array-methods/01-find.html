@@ -1,0 +1,107 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The find() method returns the value of the first element in the provided array that satisfies the provided testing function.
+*/
+
+function find(array, callback, optionalThis) {
+  var findCallback = callback.bind(optionalThis);
+  var originalArrayLength = array.length;
+  for (var i = 0; i < originalArrayLength; i++) {
+    if (findCallback(array[i], i, array)) {
+      return array[i];
+    }
+  }
+}
+
+tests({
+
+  'it should be able to invoke callback for every index of the array, not just those with assigned values': function() {
+    var numberCallbackWasRun = 0;
+    find([,,,3], function() {
+      numberCallbackWasRun++;
+    });
+    eq(numberCallbackWasRun, 4);
+  },
+
+  'it should pass in the ith element as the first argument to the callback' : function() {
+    find([1], function(currentElement){
+      eq(currentElement, 1);
+    });
+  },
+
+  'it should execute the callback function once for each index of the array until the callback returns a truthy value': function() {
+    var numberCallbackWasRun = 0;
+    find([1,2,3], function(currentElement){
+      numberCallbackWasRun++;
+      return currentElement > 1;
+    });
+    eq(numberCallbackWasRun, 2)
+  },
+
+  'it should pass in the index as the second argument to the callback' : function() {
+    find([1], function(currentElement, currentIndex){
+      eq(currentIndex, 0);
+    });
+  },
+
+  'it should pass in the array that find() process as the third argument to the callback' : function() {
+    var originalArray = [1];
+    find(originalArray, function(currentElement, currentIndex, passedInArray){
+      eq(passedInArray, originalArray);
+    });
+  },
+
+  'it should return the value of the ith element if callback returns a truthy value': function() {
+    var findReturnValue = find([1,2,3], function(currentElement){
+      return currentElement > 1;
+    });
+    eq(findReturnValue, 2);
+  },
+
+  'it should return undefined if callback never returns a truthy value': function() {
+    var findReturnValue = find([1,2,3], function(element){
+      return element < 1;
+    });
+    eq(findReturnValue, undefined);
+  },
+
+  'it should accept an optional this object': function() {
+    find([1], function() {
+      eq(this.check, 'could be accessed inside the function');
+    }, {check: 'could be accessed inside the function'});
+  },
+
+  'it should not execute callback on any elements added to the array after find() begins': function() {
+    var originalArray = [1];
+    var numberCallbackWasRun = 0;
+    find(originalArray, function() {
+      originalArray.push(2);
+      numberCallbackWasRun++;
+    });
+    eq(numberCallbackWasRun, 1);
+  },
+
+  'it should pass the value at the time find() visits that element': function() {
+    var originalArray = [1,1];
+    var findReturnValue = find(originalArray, function(element, index, array) {
+      array[1] = 2;
+      return element > 1;
+    });
+    eq(findReturnValue, 2);
+  },
+
+  'it should still execute callback on elements that are deleted after find() begins': function() {
+    var originalArray = [1,2];
+    var numberCallbackWasRun = 0;
+    var findReturnValue = find(originalArray, function() {
+      originalArray.pop();
+      numberCallbackWasRun++;
+    });
+    eq(numberCallbackWasRun, 2);
+  }
+
+});
+
+</script>

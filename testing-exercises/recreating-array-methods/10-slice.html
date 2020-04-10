@@ -1,0 +1,134 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The slice() method returns a shallow copy of a portion of an array into a new array object selected from begin to end (end not included)
+where begin and end represent the index of items in that array.
+The original array will not be modified.
+*/
+
+/* FUNCTION SIGNATURE
+slice(arr, [begin[, end]])
+*/
+
+/* PARAMETERS
+begin | Optional
+  - Zero-based index at which to begin extraction.
+  - A negative index can be used, indicating an offset from the end of the sequence.
+    slice(-2) extracts the last two elements in the sequence.
+  - If begin is undefined, slice begins from index 0.
+  - If begin is greater than the index range of the sequence, an empty array is returned.
+end | Optional
+  - Zero-based index before which to end extraction.
+    slice extracts up to but not including end.
+    For example, slice(1,4) extracts the second element through the fourth element (elements indexed 1, 2, and 3).
+  - A negative index can be used, indicating an offset from the end of the sequence.
+    slice(2,-1) extracts the third element through the second-to-last element in the sequence.
+  - If end is omitted, slice extracts through the end of the sequence (arr.length).
+  - If end is greater than the length of the sequence, slice extracts through to the end of the sequence (arr.length).
+*/
+
+/* RETURN VALUE
+A new array containing the extracted elements.
+*/
+
+function slice(arr, begin, end) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array.');
+  }
+
+  var newArray = [];
+  var traversingIndex = 0;
+  var endIndex = arr.length;
+
+  begin = parseInt(begin);
+  if (begin) {
+    if (begin < 0) {
+      traversingIndex = arr.length + begin;
+    } else {
+      traversingIndex = begin;
+    }
+    if (begin >= arr.length) {
+      return newArray;
+    }
+  }
+
+  end = parseInt(end);
+  if (end) {
+    if (end < 0) {
+      endIndex = arr.length + end;
+    } else {
+      endIndex = end;
+    }
+  }
+
+  for (traversingIndex; traversingIndex < endIndex; traversingIndex++) {
+    newArray.push(arr[traversingIndex]);
+  }
+
+  return newArray;
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      slice({});
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should return a new array constisting the shallow copy of elements of the original array': function() {
+    var originalArray = [{check: 'the new array should have this object reference'}];
+    var newArray = slice(originalArray);
+
+    eq(newArray === originalArray, false);
+    eq(originalArray[0].check, newArray[0].check);
+  },
+  'it should not modify the original array': function() {
+    var referenceArray = ['a'];
+    var sameElementValueArray = ['a'];
+    var originalArray = referenceArray;
+
+    slice(originalArray);
+
+    // compare reference
+    eq(originalArray, referenceArray);
+
+    // compare elements (total and values)
+    eq(originalArray.length, sameElementValueArray.length);
+    for (var i = 0; i < sameElementValueArray.length; i++) {
+      eq(originalArray[i], sameElementValueArray[i]);
+    }
+  },
+  'if begin is positive, the copying should start at array[begin]': function() {
+    var newArray = slice(['a', 'b'], 1);
+    eq(newArray[0], 'b');
+  },
+  'if begin is negative, it is taken as the offset from the end of the array': function() {
+    var newArray = slice(['a', 'b'], -1);
+    eq(newArray[0], 'b');
+  },
+  'if begin is greater than or equal to array.length, an empty array is returned': function() {
+    var newArray = slice(['a'], 1);
+    eq(newArray.length, 0);
+  },
+  'if end is positive, the copying should stop at array[end], excluding array[end] itself': function() {
+    var newArray = slice(['a', 'b'], 0, 1);
+    eq(newArray.length, 1);
+  },
+  'if end is negative, it is taken as the offset from the end of the array': function() {
+    var newArray = slice(['a', 'b'], 0, -1);
+    eq(newArray.length, 1);
+  },
+  'if end is greater than or equal to array.length, the copying should go through the end of the array': function() {
+    var newArray = slice(['a', 'b'], 0, 2);
+    eq(newArray.length, 2);
+  },
+
+});
+
+</script>

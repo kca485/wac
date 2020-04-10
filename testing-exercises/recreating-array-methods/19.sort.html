@@ -1,0 +1,186 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The sort() method sorts the elements of an array in place and returns the sorted array.
+The default sort order is ascending, built upon converting the elements into strings, then comparing their sequences of UTF-16 code units values.
+The time and space complexity of the sort cannot be guaranteed as it depends on the implementation.
+*/
+
+/* FUNCTION SIGNATURE
+sort(arr[, compareFunction(firstEl, secondEl)])
+*/
+
+/* PARAMETERS
+compareFunction | Optional
+  Specifies a function that defines the sort order.
+  If omitted, the array elements are converted to strings, then sorted according to each character's Unicode code point value.
+    firstEl
+      The first element for comparison.
+    secondEl
+      The second element for comparison.
+*/
+
+/* RETURN VALUE
+The sorted array.
+*/
+
+function sort(arr, customCompareFunction) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(arr + ' is not an array');
+  }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  // if compareFunction is not a function nor undefined
+  if ((typeof customCompareFunction !== 'function') && (customCompareFunction !== undefined)) {
+    throw new TypeError('The comparison function must be either a function or undefined');
+  }
+
+  var sortComparefunction = customCompareFunction ? customCompareFunction : defaultCompareFunction;
+
+  for (var i = 0; i < arr.length; i++) {
+    if (i in arr) {
+      var baseIndex = i;
+      var comparisonIndex = baseIndex - 1;
+
+      if (comparisonIndex >= 0) {
+
+        var stillNeedToCompare = true;
+        while (stillNeedToCompare) {
+          if (sortComparefunction(arr[baseIndex], arr[comparisonIndex]) < 0) {
+            swapThese(baseIndex, comparisonIndex, arr);
+
+            baseIndex--;
+            comparisonIndex = baseIndex - 1;
+
+          } else {
+            stillNeedToCompare = false;
+          }
+
+          if (comparisonIndex < 0) {
+            stillNeedToCompare = false;
+          }
+        }
+      }
+    }
+  }
+
+  return arr;
+}
+
+function defaultCompareFunction(a, b) {
+  if (String(a) < String(b)) {
+    return -1;
+  }
+}
+
+function swapThese(indexX, indexY, array) {
+  if (indexX in array) {
+    var mediatorVar = array[indexX];
+
+    // indexX exist and indexY exist
+    if (indexY in array) {
+      array[indexX] = array[indexY];
+
+    // indexX exist and indexY doesn't exist
+    } else {
+      delete array[indexX];
+    }
+
+    array[indexY] = mediatorVar;
+
+    // indexX doesn't exist and indexY exist
+  } else if (indexY in array) {
+    array[indexX] = array[indexY];
+    delete array[indexY];
+  }
+
+    // if no indexX nor indexY, do nothing
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      sort(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'if no compareFunction, all non-undefined array elements are sorted by converting them to strings and comparing strings in UTF-16 code units order': function() {
+    var arr = [77, 9, 5, 50];
+    sort(arr);
+
+    eq(arr[0], 5);
+    eq(arr[1], 50);
+    eq(arr[2], 77);
+    eq(arr[3], 9);
+  },
+  'it should return the sorted array': function() {
+    var arr = [1, 2];
+    var sortReturnValue = sort(arr);
+
+    eq(sortReturnValue, arr);
+  },
+  'it should throw TypeError if compareFunction is not a function nor undefined': function() {
+    var isTypeErrorThrown = false;
+    try {
+      sort([1,2], 'this compareFunction is not a function');
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'if compareFunction(a, b) returns less than 0, sort a to an index lower than b': function() {
+    var arr = [8, 50, 20];
+    sort(arr, function(a, b) {
+      return a - b;
+    });
+
+    eq(arr[0], 8);
+    eq(arr[1], 20);
+    eq(arr[2], 50);
+  },
+  'if compareFunction(a, b) returns 0, leave a and b unchanged with respect to each other, but sorted with respect to all different elements': function() {
+    var items = [
+      {name: 'firstJohn', value: 2},
+      {name: 'secondJohn', value: 2},
+      {name: 'Doe', value: 1},
+    ];
+    sort(items, function(a, b) {
+      return a.value - b.value;
+    })
+
+    eq(items[0].name, 'Doe');
+    eq(items[1].name, 'firstJohn');
+    eq(items[2].name, 'secondJohn');
+  },
+  'if compareFunction(a, b) returns greater than 0, sort b to an index lower than a': function() {
+    var arr = [3, 2, 1];
+    sort(arr, function(a, b) {
+      return 1;
+    })
+
+    eq(arr[0], 3);
+    eq(arr[1], 2);
+    eq(arr[2], 1);
+  },
+  'it should be able to be called or applied to other object': function() {
+    var obj = {0: 55, 1: 44, length: 2};
+    sort.call(obj, [])
+
+    eq(obj[0], 44);
+    eq(obj[1], 55);
+  }
+
+});
+
+</script>
+

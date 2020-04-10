@@ -1,0 +1,224 @@
+<script src="../simpletest.js"></script>
+<script>
+
+/*
+The copyWithin() method shallow copies part of an array to another location in the same array
+and returns it without modifying its length.
+*/
+
+/* FUNCTION SIGNATURE
+copyWithin(arr, targetIndex[, startIndex[, endIndex]])
+*/
+
+/*
+targetIndex
+  Zero-based index at which to copy the sequence to.
+  If negative, target will be counted from the end.
+  If target is at or greater than arr.length, nothing will be copied.
+  If target is positioned after start, the copied sequence will be trimmed to fit arr.length.
+startIndex | Optional
+  Zero-based index at which to start copying elements from.
+  If negative, start will be counted from the end.
+  If start is omitted, copyWithin will copy from index 0.
+endIndex | Optional
+  Zero-based index at which to end copying elements from.
+  copyWithin copies up to but not including end.
+  If negative, end will be counted from the end.
+  If end is omitted, copyWithin will copy until the last index (default to arr.length).
+*/
+
+/* RETURN VALUE
+The modified array
+*/
+
+function copyWithin(arr, targetIndex, startIndex, endIndex) {
+   if (!Array.isArray(arr) && !isTypedArray(arr)) {
+     throw new TypeError(arr + ' is not an array.');
+   }
+
+  if (this !== window) {
+    arr = this;
+  }
+
+  var actualTargetIndex = 0;
+  if (targetIndex < 0) {
+    actualTargetIndex = arr.length + targetIndex;
+  } else if (targetIndex < arr.length) {
+    actualTargetIndex = targetIndex;
+  } else {
+    return arr;
+  }
+
+  var actualStartIndex = 0;
+  if (startIndex < 0) {
+    actualStartIndex = arr.length + startIndex;
+  } else if (startIndex > 0) {
+    actualStartIndex = startIndex;
+  }
+
+  var actualEndIndex = arr.length;
+  if (endIndex < 0) {
+    actualEndIndex = arr.length + endIndex;;
+  } else if (endIndex > 0) {
+    actualEndIndex = endIndex;
+  }
+
+  var targetToEndOfArray = arr.length - actualTargetIndex;
+  var startToEnd = actualEndIndex - actualStartIndex;
+  if (targetToEndOfArray > startToEnd) {
+    var lastCopyIndex = actualEndIndex - 1;
+  } else {
+    var lastCopyIndex = actualStartIndex + targetToEndOfArray - 1;
+  }
+
+  var temporaryStorage = [];
+  var temporaryIndex = 0
+  for (var i = actualStartIndex; i <= lastCopyIndex; i++) {
+    if (i in arr) {
+      temporaryStorage[temporaryIndex] = arr[i];
+    }
+    temporaryIndex++;
+  }
+
+  for (var i = 0; i < temporaryIndex; i++) {
+    if (i in temporaryStorage) {
+      arr[actualTargetIndex] = temporaryStorage[i];
+    } else {
+      delete arr[actualTargetIndex];
+    }
+    actualTargetIndex++;
+    if (actualTargetIndex === arr.length) {
+      return arr;
+    }
+  }
+
+  return arr;
+}
+
+function isTypedArray(obj) {
+  if (
+    obj instanceof Int8Array ||
+    obj instanceof Uint8Array ||
+    obj instanceof Uint8ClampedArray ||
+    obj instanceof Int16Array ||
+    obj instanceof Uint16Array ||
+    obj instanceof Int32Array ||
+    obj instanceof Uint32Array ||
+    obj instanceof Float32Array ||
+    obj instanceof Float64Array ||
+    obj instanceof BigInt64Array ||
+    obj instanceof BigUint64Array
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+tests({
+
+  'it should throw TypeError if the first argument is not an array': function() {
+    var isTypeErrorThrown = false;
+    try {
+      copyWithin(1);
+    } catch(error) {
+      isTypeErrorThrown = error instanceof TypeError;
+    }
+
+    eq(isTypeErrorThrown, true);
+  },
+  'it should shallow copy elements of the array to targetIndex and keep the length': function() {
+    var arr = [{content: 'a'}, {content: 'b'}, {content: 'c'}];
+    copyWithin(arr, 1);
+
+    eq(arr[0].content, 'a');
+    eq(arr[1].content, 'a');
+    eq(arr[2].content, 'b');
+    eq(arr.length, 3);
+  },
+  'it should return the modifed array, not a new one': function() {
+    var arr = [1,2];
+    var copyWithinReturnValue = copyWithin(arr);
+
+    eq(copyWithinReturnValue, arr);
+  },
+  'if targetIndex is negative, targetIndex will be counted from the end of array': function() {
+    var arr = ['a', 'b', 'c'];
+    copyWithin(arr, -1);
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'b');
+    eq(arr[2], 'a');
+  },
+  'if targetIndex is equal to or greater than arr.length. nothing will be copied': function() {
+    var arr = ['a', 'b'];
+    copyWithin(arr, 2);
+
+    eq(arr[0], 'a');
+    eq(arr[1], 'b');
+    eq(arr.length, 2);
+  },
+  'if startIndex is provided, it should copy starting from startIndex': function() {
+    var arr = ['a', 'b', 'c'];
+    copyWithin(arr, 2, 1);
+
+    eq(arr[2], 'b');
+    eq(arr.length, 3);
+  },
+  'if startIndex is negative, startIndex will be counted from the end of array': function() {
+    var arr = ['a', 'b', 'c'];
+    copyWithin(arr, 2, -2);
+
+    eq(arr[2], 'b');
+  },
+  'if targetIndex is positioned before startIndex': function() {
+    var arr = ['a', 'b', 'c'];
+    copyWithin(arr, 1, 2);
+
+    eq(arr[1], 'c');
+  },
+  'if endIndex is provided, it copies up to but not including endIndex': function() {
+    var arr = ['a', 'b', 'c', 'd', 'e'];
+    copyWithin(arr, 1, 2, 3);
+
+    eq(arr[1], 'c');
+    eq(arr[2], 'c');
+
+
+    arr = ['k', 'l', 'm', 'n', 'o', 'p'];
+    copyWithin(arr, 3, 1, 3);
+
+    eq(arr[2], 'm');
+    eq(arr[3], 'l');
+    eq(arr[4], 'm');
+    eq(arr[5], 'p')
+  },
+  'if endIndex is negative, endIndex will be counted from the end of array': function() {
+    var arr = ['a', 'b', 'c', 'd', 'e'];
+    copyWithin(arr, 0,2,-1);
+
+    eq(arr[0], 'c');
+    eq(arr[1], 'd');
+    eq(arr[2], 'c');
+  },
+  'it should be able to be called or applied to other object': function() {
+    var obj = {0: 'a', length: 1};
+    var copyWithinReturnValue = copyWithin.call(obj, []);
+
+    eq(copyWithinReturnValue, obj);
+  },
+  'it should be able to be executed on Typed Arrays': function() {
+    var i32a = new Int32Array([1, 2, 3, 4, 5]);
+    copyWithin(i32a, 0, 2);
+
+    eq(i32a[0], 3);
+    eq(i32a[1], 4);
+    eq(i32a[2], 5);
+    eq(i32a[3], 4);
+    eq(i32a[4], 5);
+    eq(i32a.length, 5);
+  }
+
+});
+
+</script>
