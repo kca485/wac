@@ -72,7 +72,7 @@ function splice(arr, startIndex, deleteCount) {
     var lastDeletedIndex = arr.length - 1;
     var finalLengthDifference = actualStartIndex - arr.length;
   } // note: the calculation is such that in the case of ((startIndex + deleteCount) === arr.length),
-    //       it doesn't matter whether thatt case falls into either the 'if' or 'else'.
+    //       it doesn't matter whether that case falls into either the 'if' or 'else'.
     //       this note probably helps for the 7th and/or 8th test.
 
   if (arguments.length > 3) {
@@ -96,7 +96,7 @@ function splice(arr, startIndex, deleteCount) {
     }
     arr.length = arr.length + finalLengthDifference; // safe to recalculate arr.length after deletion
 
-  } else if (finalLengthDifference > 0) { // if finalLengthDifferent is positive, swap from the back
+  } else if (finalLengthDifference > 0) { // if finalLengthDifference is positive, swap from the back
 
     var startSwappingIndex = arr.length;
     arr.length = arr.length + finalLengthDifference; // recalculate arr.length first to make room at the end of array
