@@ -1,0 +1,131 @@
+<script src="./simpletest.js"></script>
+<script>
+
+/**
+ * I want to use accounting.unformat(),
+ * so I removed most of accountingJS (along with the comments)
+ * and keep the main part of accounting.unformat plus a bit of code that effects .toFixed and .unformat
+ */
+
+(function() {
+
+  /* --- A heavily stripped down accountingJS --- */
+
+  var lib = {};
+
+  lib.settings = {
+    number: {
+      precision : 0,
+      decimal : "."
+    }
+  };
+
+  function checkPrecision(val, base) {
+    val = Math.round(Math.abs(val));
+    return isNaN(val)? base : val;
+  }
+
+  lib.unformat = function(value) {
+    value = value || 0;
+
+    if (typeof value === "number") return value;
+
+    decimal = lib.settings.number.decimal;
+
+    var regex = new RegExp("[^0-9-" + decimal + "]", ["g"]),
+      unformatted = parseFloat(
+        ("" + value)
+        .replace(/\((\d+)\)/, "-$1")
+        .replace(regex, '')
+        .replace(decimal, '.')
+      );
+
+    return unformatted;
+  };
+
+
+  /***************************
+   *  toFixed() starts here  *
+   ***************************/
+
+  lib.toFixed = function(value, precision) {
+    precision = checkPrecision(precision, lib.settings.number.precision);
+
+    var unformattedValue = lib.unformat(value) + '';
+    
+    var decimalNumber = unformattedValue.split('.')[1];
+
+    // if value is a whole number, add '.',
+    // and decimalNumber.length should be 0
+    if (decimalNumber === undefined) {
+      unformattedValue += '.';
+      decimalNumber = '';
+    }
+
+    // when decimalNumber.length < precision, add '0s' so we can make a simple regex
+    for (var i = decimalNumber.length; i < precision; i++) {
+      unformattedValue += '0';
+    }
+
+    var decimalDownRegex = new RegExp('(\\.)(\\d{' + precision + '})', 'g');
+    // shift the position of the decimal
+    var decimalShiftedDownValue = unformattedValue.replace(decimalDownRegex, '$2$1');
+    // round it but keep as string
+    decimalShiftedDownValue = Math.round(decimalShiftedDownValue) + '';
+  
+    var decimalUpRegex = new RegExp('(\\d{' + precision + '}$)', 'g');
+    // shift back the position of the decimal
+    var finalRoundedValue = decimalShiftedDownValue.replace(decimalUpRegex, '.$&');
+    // we want to return the correct number as string. e.g '.50' ---> '0.50'
+    finalRoundedValue = Number(finalRoundedValue).toFixed(precision);
+
+    return finalRoundedValue;
+  };
+
+
+  window.accounting = lib;
+
+}());
+
+
+tests({
+
+  'it should round a floating point number according to precision': function() {
+    eq(accounting.toFixed(100.1), '100');
+  },
+  'it should round a whole number according to precision': function() {
+    eq(accounting.toFixed(100, 1), '100.0');
+  },
+  'it should round a negative number according to precision': function() {
+    eq(accounting.toFixed(-0.5, 3), '-0.500');
+  },
+  'if no precision, precision would be equal to accounting.settings.number.precision': function() {
+    eq(accounting.toFixed(100.1), '100');
+  },
+  'it should round correctly for decimal edge cases.': function() {
+    eq(accounting.toFixed(0.615, 2), '0.62');
+    eq(accounting.toFixed(10.235, 2), '10.24');
+    eq(accounting.toFixed(1.005, 2), '1.01');
+  },
+
+  'if precision is negative, precision should be converted to positive': function() {
+    eq(accounting.toFixed(100, -2), '100.00');
+  },
+  'if precision is a floating point number, precision should be converted to a whole number': function() {
+    eq(accounting.toFixed(100, 2.3), '100.00');
+  },
+  'if precision is not a number, precision would be equal to accounting.settings.number.precision': function() {
+    eq(accounting.toFixed(100, 2.3), '100.00');
+  },
+
+  'it should be able to accept a string': function() {
+    eq(accounting.toFixed('100.1'), '100');
+  },
+  'it should unformat the value': function() {
+    eq(accounting.toFixed('$100.1;]['), '100');
+    eq(accounting.toFixed('(100)'), '-100');
+  }
+
+});
+
+</script>
