@@ -1,0 +1,87 @@
+html, body {
+  width: 100%;
+  margin: 0;
+}
+
+#todoapp {
+  margin: auto;
+  margin-top: 80px;
+  width: 90%;
+  max-width: 760px;
+  font-size: 24px;
+  font-family: sans-serif;
+}
+
+h1 {
+  text-align: center;
+}
+
+input[type="text"] {
+  font-size: 24px;
+  width: 100%;
+  font-family: sans-serif;
+}
+
+header input[type=checkbox] {
+  display: none;
+}
+
+#how-to {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #777;
+}
+
+#toggle-all-button, #clear-completed {
+  all: unset;
+  font-size: 14px;
+  text-decoration: underline;
+  text-align: right;
+  margin-right: 14px;
+  margin-top: 14px;
+}
+
+#main {
+  margin-top: 32px;
+}
+
+.view button {
+  all: unset;
+  font-size: 12px;
+  text-decoration: underline;
+  margin-left: 12px;
+  color: #777;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li > ul {
+  margin-left: 48px;
+}
+
+.view label {
+  display: block;
+  border: transparent solid 3px;
+}
+
+input:checked ~ label {
+  text-decoration: line-through;
+  color: #bbb;
+}
+
+/* when on editMode */
+
+.todo-list li.editing > .view .edit {
+  display: block;
+}
+
+.todo-list li.editing > .view label {
+  display: none;
+}
+
+.todo-list li .view .edit {
+  display: none;
+}

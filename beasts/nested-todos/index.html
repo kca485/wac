@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Nested Todos</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <div id="todoapp">
+      <header id="header">
+        <h1>todos</h1>
+        <input id="new-todo" type="text" autofocus>
+        <div id="how-to">
+          Type in the textbox to add a todo.<br>
+          Double click on a todo to edit.<br>
+          Hit 'Esc' while editing to cancel edit.
+        </div>
+        <input id="toggle-all" type="checkbox">
+        <button id="toggle-all-button">mark all</button>
+        <button id="clear-completed">clear completed</button>
+      </header>
+
+      <section id="main">
+        <ul class="todo-list" id="top-ul"></ul>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
